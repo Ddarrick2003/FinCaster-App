@@ -15,6 +15,15 @@ uploaded_file = st.file_uploader("📤 Upload your OHLCV CSV file", type=["csv"]
 if uploaded_file:
     try:
         df = pd.read_csv(uploaded_file)
+        # Clean numeric columns: remove commas, convert to float
+for col in ['Open', 'High', 'Low', 'Close', 'Volume']:
+    df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', ''), errors='coerce')
+
+# Stop if any required numeric column still has NaN
+if df[['Open', 'High', 'Low', 'Close', 'Volume']].isnull().any().any():
+    st.error("❌ Some numeric columns couldn't be cleaned. Check the input file format.")
+    st.stop()
+
 
         required_cols = {'Open', 'High', 'Low', 'Close', 'Volume'}
         if not required_cols.issubset(df.columns):
